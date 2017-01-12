@@ -1,10 +1,8 @@
 <?php
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 require_once('env.php');
+require_once('simple_dom.php');
+
+
 
 class Pubmed {
 	public function __construct() {
@@ -30,12 +28,16 @@ class Pubmed {
 		$this->parameters->action = $v['type'];
 		switch ($this->parameters->action) {
 			case 'add':
-			case 'update':
 				$parameters = array('slug','name','pubmed_url');
 			break;
-			case 'slug':
+			case 'edit':
+				$parameters = array('id','slug','name','pubmed_url');
+			break;
 			case 'refresh';
-				$parameters = array('slug');
+				$parameters = array('id','pubmed_url');
+			break;
+			case 'delete':
+				$parameters = array('id');
 			break;
 		}
 		$error = false;
@@ -52,43 +54,87 @@ class Pubmed {
 	}
 	
 	public function ajax_do_action() {
-		$this->ajax_check_parameters();
-		switch($this->parameters->action) {
-			$this->pubmed_url = $this->parameters->pubmed_url;
-			$this->get_pubmed_data();
+			$this->ajax_check_parameters();
+			if ($this->parameters->action !== 'delete') {
+				$this->pubmed_url = $this->parameters->pubmed_url;
+				$this->get_pubmed_data();
+			}
+			switch($this->parameters->action) {
 			case 'add':
 				$this->query = $this->db->prepare('INSERT INTO pubmed (name,slug,pubmed_url,data) VALUES (:name,:slug,:pubmed_url,:data)');
 				$this->query_parameters = array(
-																		'name' => $this->parameters->name, 
-																		'slug' => $this->parameters->slug,
-																		'pubmed_url' => $this->parameters->pubmed_url
-																		'data' => $this->pubmed_data;
-																	);
+					'name' => $this->parameters->name, 
+					'slug' => $this->parameters->slug,
+					'pubmed_url' => $this->parameters->pubmed_url,
+					'data' => json_encode($this->pubmed_data)
+				);
+				if($this->query_execute()) {
+					unset($this->query_parameters['data']);
+					$this->query_parameters['id'] = $this->db->lastInsertId();
+					$this->ajax_type = 'add_row';
+					$this->ajax_content = $this->query_parameters;
+					$this->return_ajax();
+				}
 			break;
-			case 'update':
-				
+			case 'edit':
+				$this->get_pubmed_data();
+				$this->query = $this->db->prepare('UPDATE pubmed SET name=:name,slug=:slug,pubmed_url=:pubmed_url,data=:data WHERE id=:id');
+				$this->query_parameters = array(
+						'id' => $this->parameters->id,
+						'name' => $this->parameters->name,
+						'slug' => $this->parameters->slug,
+						'pubmed_url' => $this->parameters->pubmed_url,
+						'data' => json_encode($this->pubmed_data)
+				);
+				if ($this->query_execute()) {
+					unset($this->query_parameters['data']);
+					$this->ajax_type = 'update_row';
+					$this->ajax_content = $this->query_parameters;
+					$this->return_ajax();
+				}
 			break;
 			case 'refresh':
-				
+				$this->query = $this->db->prepare('UPDATE pubmed SET data=:data WHERE id=:id');
+				$this->query_parameters = array(
+					'id' => $this->parameters->id,
+					'data' => json_encode($this->pubmed_data)
+				);
+				if ($this->query_execute()) {
+					$this->ajax_type = 'alert_update';
+					$this->ajax_content = $this->parameters->id;
+					$this->return_ajax();
+				}
 			break;
 			case 'delete':
-				
+				$this->query = $this->db->prepare('DELETE FROM pubmed WHERE id=:id');
+				$this->query_parameters = array('id'=>$this->parameters->id);
+				if ($this->query_execute()) {
+					$this->ajax_type = 'remove_row';
+					$this->ajax_content = $this->query_parameters;
+					$this->return_ajax();
+				}
 			break;
 		}
 	}
 	
 	public function get_pubmed_data() {
 		if (!$this->pubmed_url) {
-			throw_ajax_error('Missing PubMed URL');
+			$this->throw_ajax_error('Missing PubMed URL');
 		}
-	
-		$ch = curl_init(); 
-		curl_setopt($ch, CURLOPT_URL, $this->pubmed_url); 
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-		$html = curl_exec($ch); 
-		curl_close($ch); 
-		$dom->loadHTML($html);
-		$this->pubmed_data = false;
+		$html = file_get_html($this->pubmed_url);
+		$items = array();
+		foreach ($html->find('.rprt') as $data) {
+			$item = new stdClass();
+			$link = $data->find('.title a',0);
+			$item->link = 'https://www.ncbi.nlm.nih.gov'.$link->href;
+			$item->title = $link->plaintext;
+			$details = $data->find('.supp',0);
+			$item->authors = $details->find('.desc',0)->plaintext;
+			$item->publication = $details->find('.details',0)->plaintext;
+			$item->pubmed_id = $data->find('.rprtid dd',0)->plaintext;
+			array_push($items,$item);
+		}
+		$this->pubmed_data = $items;
 	}
 	
 	public function print_top_buttons() {
@@ -106,7 +152,18 @@ class Pubmed {
 		if (count($this->results) == 0) {
 			print '<p>No feeds cached.</p>';
 		} else {
-			//
+			?><ul class="list-group"> <?php
+			foreach ($this->results as $result) {
+			 ?><li data-id="<?php print $result['id']; ?>" data-url="<?php print $result['pubmed_url']; ?>" data-slug="<?php print $result['slug']; ?>" class="list-group-item">
+				<p><?php print $result['name']; ?></p>
+				<div class="ml-auto">
+					<button data-action="edit-item" class="btn btn-warning"><i class="fa fa-pencil"></i></button>
+					<button data-action="refresh-item" class="btn btn-success"><i class="fa fa-refresh"></i></button>
+					<button data-action="delete-item" class="btn btn-danger"><i class="fa fa-remove"></i></button>
+				</div>
+			</li> <?php
+			}
+			?></ul><?php
 		}
 	}
 	
@@ -114,6 +171,7 @@ class Pubmed {
 		try {
 			$this->query->execute($this->query_parameters);
 			$this->results = $this->query->fetchAll();
+			return true;
 		} catch (PDOException $e) {
 			$self::throw_error($e->getMessage());
 		}

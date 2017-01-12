@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 define( 'WP_USE_THEMES', false );
 define( 'COOKIE_DOMAIN', false );
 define( 'DISABLE_WP_CRON', true );
@@ -49,6 +53,7 @@ $pubmed = new Pubmed;
 			<div class="modal-body">
 				<form>
 					<input type="hidden" name="purpose">
+					<input type="hidden" name="id">
 					<div clas="form-group">
 						<label for="name">Feed Name</label>
 						<input type="text" class="form-control" name="name">
