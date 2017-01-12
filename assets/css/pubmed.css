@@ -1,0 +1,23 @@
+.pubmed .user-alert {
+  position: fixed;
+  z-index: 10;
+  width: 90%;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 10%;
+}
+
+.pubmed .container-fluid {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+.pubmed #action-buttons {
+  margin: 10px 0;
+}
+
+.pubmed .modal .modal-header h2 {
+  padding-bottom: 0;
+  color: white;
+}
