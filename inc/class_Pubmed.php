@@ -2,8 +2,6 @@
 require_once('env.php');
 require_once('simple_dom.php');
 
-
-
 class Pubmed {
 	public function __construct() {
 		global $creds;
@@ -117,6 +115,50 @@ class Pubmed {
 		}
 	}
 	
+	public function feed_check_parameters() {
+		if (!isset($_GET['slug'])) {
+			$this->throw_feed_error('No slug specified');
+		}
+	}
+	
+	public function feed_output() {
+		$this->feed_check_parameters();
+		$this->query = $this->db->prepare('SELECT * FROM pubmed WHERE slug=:slug');
+		$this->query_parameters = array('slug' => $_GET['slug']);
+		if ($this->query_execute()) {
+			if (count($this->results) == 0) {
+				$this->throw_feed_error('Improper feed / no results found');
+			} else {
+print '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+		xmlns:content="http://purl.org/rss/1.0/modules/content/"
+		xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+		xmlns:dc="http://purl.org/dc/elements/1.1/"
+		xmlns:atom="http://www.w3.org/2005/Atom"
+		xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+		xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+		xmlns:ev="http://purl.org/rss/1.0/modules/event/">
+
+	<channel>
+	<title>PubMed Cache for '.$this->results[0]['name']."</title>
+	<description>A cache of PubMed data</description>
+	<link>http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]</link>\n";
+	$data = json_decode($this->results[0]['data']);
+	foreach ($data as $item) {
+		?>
+	<item>
+		<guid isPermaLink="false"><?php print $item->pubmed_id; ?></guid>
+		<title><?php print $item->title; ?></title>
+		<description><?php print $item->authors; ?> <?php print $item->publication; ?></description>
+		<link><?php print $item->link; ?></link>
+	</item>
+<?php
+	}
+print "\n</channel>
+</rss>";
+			}
+		}
+	}
+	
 	public function get_pubmed_data() {
 		if (!$this->pubmed_url) {
 			$this->throw_ajax_error('Missing PubMed URL');
@@ -130,7 +172,8 @@ class Pubmed {
 			$item->title = $link->plaintext;
 			$details = $data->find('.supp',0);
 			$item->authors = $details->find('.desc',0)->plaintext;
-			$item->publication = $details->find('.details',0)->plaintext;
+			$pub = explode('. doi',str_replace(' .','',$details->find('.details',0)->plaintext));
+			$item->publication = $pub[0];
 			$item->pubmed_id = $data->find('.rprtid dd',0)->plaintext;
 			array_push($items,$item);
 		}
@@ -157,6 +200,7 @@ class Pubmed {
 			 ?><li data-id="<?php print $result['id']; ?>" data-url="<?php print $result['pubmed_url']; ?>" data-slug="<?php print $result['slug']; ?>" class="list-group-item">
 				<p><?php print $result['name']; ?></p>
 				<div class="ml-auto">
+					<button data-action="show_url" class="btn btn-info"><i class="fa fa-link"></i></button>
 					<button data-action="edit-item" class="btn btn-warning"><i class="fa fa-pencil"></i></button>
 					<button data-action="refresh-item" class="btn btn-success"><i class="fa fa-refresh"></i></button>
 					<button data-action="delete-item" class="btn btn-danger"><i class="fa fa-remove"></i></button>
@@ -189,6 +233,12 @@ class Pubmed {
 		$this->ajax_type = 'error';
 		$this->ajax_content = $message;
 		$this->return_ajax();
+	}
+	
+	public function throw_feed_error($message) {
+	?>
+		<html><head><title>PubMed Cache Error</title></head><body><p><?php print $message; ?></p></body></html>
+	<?php
 	}
 	
 	public static function throw_error($message) {

@@ -1,8 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 define( 'WP_USE_THEMES', false );
 define( 'COOKIE_DOMAIN', false );
 define( 'DISABLE_WP_CRON', true );

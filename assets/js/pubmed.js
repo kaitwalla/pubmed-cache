@@ -1,12 +1,15 @@
 $(function() {
-  $('button')
-    .on('click',function() {
+  $('body')
+    .on('click','button',function() {
       switch($(this).data('action')) {
         case 'add':
           modal.show('Add feed','add',false);
         break;
         case 'save':
           ajax_actions.save();
+        break;
+        case 'show_url':
+          alert(window.location.origin+window.location.pathname+'feed.php?slug='+$(this).parents('li').data('slug'));
         break;
         case 'delete-item':
           var li = $(this).parents('li');
@@ -48,7 +51,7 @@ $(function() {
          },
          add_row: function(content) {
            modal.hide();
-           $('<li class="list-group-item" data-id="'+content.id+'" data-slug="'+content.slug+'" data-url="'+content.pubmed_url+'"><p>'+content.name+'</p><div class="ml-auto"><button data-action="edit-item" class="btn btn-warning"><i class="fa fa-pencil"></i></button> <button data-action="refresh-item" class="btn btn-success"><i class="fa fa-refresh"></i></button> <button data-action="delete-item" class="btn btn-danger"><i class="fa fa-remove"></i></button></div></li>').appendTo('ul.list-group');
+           $('<li class="list-group-item" data-id="'+content.id+'" data-slug="'+content.slug+'" data-url="'+content.pubmed_url+'"><p>'+content.name+'</p><div class="ml-auto"><button data-action="show_url" class="btn btn-info"><i class="fa fa-link"></i></button> <button data-action="edit-item" class="btn btn-warning"><i class="fa fa-pencil"></i></button> <button data-action="refresh-item" class="btn btn-success"><i class="fa fa-refresh"></i></button> <button data-action="delete-item" class="btn btn-danger"><i class="fa fa-remove"></i></button></div></li>').appendTo('ul.list-group');
            private.add_alert('success','Feed added successfully!');
          },
          error: function(content) {
