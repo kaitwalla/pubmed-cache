@@ -40,7 +40,7 @@ $pubmed = new Pubmed;
 	</div>
 </div>
 	
-<div class="modal fade hide">
+<div id="primary-modal" class="modal fade hide">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header bg-primary">
@@ -69,6 +69,19 @@ $pubmed = new Pubmed;
 			<div class="modal-footer">
 	        <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
 					<button type="button" class="btn btn-primary" data-action="save">Save</button>
+			</div>
+		</div>
+	</div>	
+</div>
+	
+<div id="secondary-modal" class="modal fade hide">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-body">
+				<p class="content"></p>
+			</div>
+			<div class="modal-footer">
+					<button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
 			</div>
 		</div>
 	</div>	

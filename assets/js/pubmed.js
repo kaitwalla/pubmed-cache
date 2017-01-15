@@ -9,7 +9,8 @@ $(function() {
           ajax_actions.save();
         break;
         case 'show_url':
-          alert(window.location.origin+window.location.pathname+'feed.php?slug='+$(this).parents('li').data('slug'));
+          $('#secondary-modal p.content').text(window.location.origin+window.location.pathname+'feed.php?slug='+$(this).parents('li').data('slug'));
+          $('#secondary-modal').modal('show');
         break;
         case 'delete-item':
           var li = $(this).parents('li');
@@ -129,16 +130,16 @@ $(function() {
   
   var modal = function() {
     var private = {
-      container: $('.modal'),
+      container: $('#primary-modal'),
       initialize: function() {
         private.header = private.container.find('h2');
         private.purpose = private.container.find('input[name="purpose"]');
         private.set_slug_typer();
       },
       set_slug_typer: function() {  
-        $('.modal').on('keyup','input[name="name"]',function() {
-          var slug = $('.modal input[name="name"]').val().toLowerCase().replace(/\W/g,'');
-          $('.modal input[name="slug"]').val(slug);
+        private.container.on('keyup','input[name="name"]',function() {
+          var slug = $('input[name="name"]',private.container).val().toLowerCase().replace(/\W/g,'');
+          $('input[name="slug"]',private.container).val(slug);
         });
       }
     };
