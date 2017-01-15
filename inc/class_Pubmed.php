@@ -58,60 +58,60 @@ class Pubmed {
 				$this->get_pubmed_data();
 			}
 			switch($this->parameters->action) {
-			case 'add':
-				$this->query = $this->db->prepare('INSERT INTO pubmed (name,slug,pubmed_url,data) VALUES (:name,:slug,:pubmed_url,:data)');
-				$this->query_parameters = array(
-					'name' => $this->parameters->name, 
-					'slug' => $this->parameters->slug,
-					'pubmed_url' => $this->parameters->pubmed_url,
-					'data' => json_encode($this->pubmed_data)
-				);
-				if($this->query_execute()) {
-					unset($this->query_parameters['data']);
-					$this->query_parameters['id'] = $this->db->lastInsertId();
-					$this->ajax_type = 'add_row';
-					$this->ajax_content = $this->query_parameters;
-					$this->return_ajax();
-				}
-			break;
-			case 'edit':
-				$this->get_pubmed_data();
-				$this->query = $this->db->prepare('UPDATE pubmed SET name=:name,slug=:slug,pubmed_url=:pubmed_url,data=:data WHERE id=:id');
-				$this->query_parameters = array(
-						'id' => $this->parameters->id,
-						'name' => $this->parameters->name,
+				case 'add':
+					$this->query = $this->db->prepare('INSERT INTO pubmed (name,slug,pubmed_url,data) VALUES (:name,:slug,:pubmed_url,:data)');
+					$this->query_parameters = array(
+						'name' => $this->parameters->name, 
 						'slug' => $this->parameters->slug,
 						'pubmed_url' => $this->parameters->pubmed_url,
 						'data' => json_encode($this->pubmed_data)
-				);
-				if ($this->query_execute()) {
-					unset($this->query_parameters['data']);
-					$this->ajax_type = 'update_row';
-					$this->ajax_content = $this->query_parameters;
-					$this->return_ajax();
-				}
-			break;
-			case 'refresh':
-				$this->query = $this->db->prepare('UPDATE pubmed SET data=:data WHERE id=:id');
-				$this->query_parameters = array(
-					'id' => $this->parameters->id,
-					'data' => json_encode($this->pubmed_data)
-				);
-				if ($this->query_execute()) {
-					$this->ajax_type = 'alert_update';
-					$this->ajax_content = $this->parameters->id;
-					$this->return_ajax();
-				}
-			break;
-			case 'delete':
-				$this->query = $this->db->prepare('DELETE FROM pubmed WHERE id=:id');
-				$this->query_parameters = array('id'=>$this->parameters->id);
-				if ($this->query_execute()) {
-					$this->ajax_type = 'remove_row';
-					$this->ajax_content = $this->query_parameters;
-					$this->return_ajax();
-				}
-			break;
+					);
+					if($this->query_execute()) {
+						unset($this->query_parameters['data']);
+						$this->query_parameters['id'] = $this->db->lastInsertId();
+						$this->ajax_type = 'add_row';
+						$this->ajax_content = $this->query_parameters;
+						$this->return_ajax();
+					}
+				break;
+				case 'edit':
+					$this->get_pubmed_data();
+					$this->query = $this->db->prepare('UPDATE pubmed SET name=:name,slug=:slug,pubmed_url=:pubmed_url,data=:data WHERE id=:id');
+					$this->query_parameters = array(
+							'id' => $this->parameters->id,
+							'name' => $this->parameters->name,
+							'slug' => $this->parameters->slug,
+							'pubmed_url' => $this->parameters->pubmed_url,
+							'data' => json_encode($this->pubmed_data)
+					);
+					if ($this->query_execute()) {
+						unset($this->query_parameters['data']);
+						$this->ajax_type = 'update_row';
+						$this->ajax_content = $this->query_parameters;
+						$this->return_ajax();
+					}
+				break;
+				case 'refresh':
+					$this->query = $this->db->prepare('UPDATE pubmed SET data=:data WHERE id=:id');
+					$this->query_parameters = array(
+						'id' => $this->parameters->id,
+						'data' => json_encode($this->pubmed_data)
+					);
+					if ($this->query_execute()) {
+						$this->ajax_type = 'alert_update';
+						$this->ajax_content = $this->parameters->id;
+						$this->return_ajax();
+					}
+				break;
+				case 'delete':
+					$this->query = $this->db->prepare('DELETE FROM pubmed WHERE id=:id');
+					$this->query_parameters = array('id'=>$this->parameters->id);
+					if ($this->query_execute()) {
+						$this->ajax_type = 'remove_row';
+						$this->ajax_content = $this->query_parameters;
+						$this->return_ajax();
+					}
+				break;
 		}
 	}
 	
@@ -122,6 +122,7 @@ class Pubmed {
 	}
 	
 	public function feed_output() {
+		global $rss_description;
 		$this->feed_check_parameters();
 		$this->query = $this->db->prepare('SELECT * FROM pubmed WHERE slug=:slug');
 		$this->query_parameters = array('slug' => $_GET['slug']);
@@ -140,7 +141,7 @@ print '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
 
 	<channel>
 	<title>PubMed Cache for '.$this->results[0]['name']."</title>
-	<description>A cache of PubMed data</description>
+	<description>$rss_description</description>
 	<link>http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]</link>\n";
 	$data = json_decode($this->results[0]['data']);
 	foreach ($data as $item) {
@@ -217,7 +218,7 @@ print "\n</channel>
 			$this->results = $this->query->fetchAll();
 			return true;
 		} catch (PDOException $e) {
-			$self::throw_error($e->getMessage());
+			$this->throw_ajax_error($e->getMessage());
 		}
 	}
 				

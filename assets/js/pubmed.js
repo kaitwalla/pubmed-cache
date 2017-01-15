@@ -65,10 +65,8 @@ $(function() {
                previous_alphabetically = (!previous_alphabetically) ? $(this).index('ul.list-group li')-1 : previous_alphabetically;
              }
            });
-           console.log(previous_alphabetically);
            previous_alphabetically = (!previous_alphabetically) ? $('ul.list-group li').length-1 : previous_alphabetically;
            $('<li class="list-group-item" data-id="'+content.id+'" data-slug="'+content.slug+'" data-url="'+content.pubmed_url+'"><p>'+content.name+'</p><div class="ml-auto"><button data-action="show_url" class="btn btn-info"><i class="fa fa-link"></i></button> <button data-action="edit-item" class="btn btn-warning"><i class="fa fa-pencil"></i></button> <button data-action="refresh-item" class="btn btn-success"><i class="fa fa-refresh"></i></button> <button data-action="delete-item" class="btn btn-danger"><i class="fa fa-remove"></i></button></div></li>').insertAfter($('ul.list-group li').eq(previous_alphabetically));
-           console.log(previous_alphabetically);
            private.add_alert('success','Feed added successfully!');
          },
          error: function(content) {
@@ -166,6 +164,9 @@ $(function() {
         private.header = private.container.find('h2');
         private.purpose = private.container.find('input[name="purpose"]');
         private.set_slug_typer();
+        $('.modal').on('shown.bs.modal',function() {
+          $(this).find('input:visible').eq(0).focus();
+        });
       },
       set_slug_typer: function() {  
         private.container.on('keyup','input[name="name"]',function() {
