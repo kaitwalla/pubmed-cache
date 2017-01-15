@@ -189,7 +189,7 @@ print "\n</channel>
 	}
 	
 	public function print_list_of_existing_feeds() {
-		$this->query = $this->db->prepare('SELECT * FROM pubmed');
+		$this->query = $this->db->prepare('SELECT * FROM pubmed ORDER BY slug ASC');
 		$this->query_parameters = array();
 		$this->query_execute();
 		if (count($this->results) == 0) {
