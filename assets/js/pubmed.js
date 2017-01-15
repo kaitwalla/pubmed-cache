@@ -59,7 +59,16 @@ $(function() {
          add_row: function(content) {
            private.working_animation.hide();
            modal.hide();
-           $('<li class="list-group-item" data-id="'+content.id+'" data-slug="'+content.slug+'" data-url="'+content.pubmed_url+'"><p>'+content.name+'</p><div class="ml-auto"><button data-action="show_url" class="btn btn-info"><i class="fa fa-link"></i></button> <button data-action="edit-item" class="btn btn-warning"><i class="fa fa-pencil"></i></button> <button data-action="refresh-item" class="btn btn-success"><i class="fa fa-refresh"></i></button> <button data-action="delete-item" class="btn btn-danger"><i class="fa fa-remove"></i></button></div></li>').appendTo('ul.list-group');
+           var previous_alphabetically = false;
+           $('ul.list-group li').each(function() {
+             if ($(this).data('slug') > content.slug) {
+               previous_alphabetically = (!previous_alphabetically) ? $(this).index('ul.list-group li')-1 : previous_alphabetically;
+             }
+           });
+           console.log(previous_alphabetically);
+           previous_alphabetically = (!previous_alphabetically) ? $('ul.list-group li').length-1 : previous_alphabetically;
+           $('<li class="list-group-item" data-id="'+content.id+'" data-slug="'+content.slug+'" data-url="'+content.pubmed_url+'"><p>'+content.name+'</p><div class="ml-auto"><button data-action="show_url" class="btn btn-info"><i class="fa fa-link"></i></button> <button data-action="edit-item" class="btn btn-warning"><i class="fa fa-pencil"></i></button> <button data-action="refresh-item" class="btn btn-success"><i class="fa fa-refresh"></i></button> <button data-action="delete-item" class="btn btn-danger"><i class="fa fa-remove"></i></button></div></li>').insertAfter($('ul.list-group li').eq(previous_alphabetically));
+           console.log(previous_alphabetically);
            private.add_alert('success','Feed added successfully!');
          },
          error: function(content) {
