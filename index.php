@@ -89,7 +89,7 @@ $pubmed = new Pubmed;
 
 <div id="ajax-warning">
 	<div class="img">
-		<img src="http://www.owlhatworld.com/wp-content/uploads/2015/12/50.gif" />
+		<img src="assets/images/50.gif" />
 		<p>Working ...</p>
 	</div>
 </div>	
