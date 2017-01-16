@@ -1,6 +1,6 @@
 # pubmed-cache
 
-PubMed is one the primary systems used by physicians to track citations for biomedical literature. The PubMed system has not seen an overhaul in quite some time, and although it claims to offer systems for programmatically providing information into other systems, at least one of those methods (the "Create RSS" funciton for a search) has huge bugs that prevent using it properly.<sup>1</sup>
+PubMed is one of the primary systems used by physicians to track citations for biomedical literature. The PubMed system has not seen an overhaul in quite some time, and although it claims to offer systems for programmatically providing information into other systems, at least one of those methods (the "Create RSS" funciton for a search) has huge bugs that prevent using it properly.<sup>1</sup>
 
 This is a PHP/MySQL tool built to cache search results and return them in a human-readable RSS feed that links to the original PubMed citation.
 
