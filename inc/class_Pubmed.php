@@ -78,11 +78,11 @@ class Pubmed {
 					$this->get_pubmed_data();
 					$this->query = $this->db->prepare('UPDATE pubmed SET name=:name,slug=:slug,pubmed_url=:pubmed_url,data=:data WHERE id=:id');
 					$this->query_parameters = array(
-							'id' => $this->parameters->id,
-							'name' => $this->parameters->name,
-							'slug' => $this->parameters->slug,
-							'pubmed_url' => $this->parameters->pubmed_url,
-							'data' => json_encode($this->pubmed_data)
+						'id' => $this->parameters->id,
+						'name' => $this->parameters->name,
+						'slug' => $this->parameters->slug,
+						'pubmed_url' => $this->parameters->pubmed_url,
+						'data' => json_encode($this->pubmed_data)
 					);
 					if ($this->query_execute()) {
 						unset($this->query_parameters['data']);
@@ -173,8 +173,15 @@ print "\n</channel>
 			$item->title = $link->plaintext;
 			$details = $data->find('.supp',0);
 			$item->authors = $details->find('.desc',0)->plaintext;
-			$pub = explode('. doi',str_replace(' .','',$details->find('.details',0)->plaintext));
-			$item->publication = $pub[0];
+			$publication = $details->find('.details',0)->plaintext;
+			$pub = explode('. doi',str_replace(' .','',$publication));
+			if (count($pub) > 1) { 
+				$item->publication = (preg_match('/.*[\d*]\.$/',$pub[1])) ? $pub[0] : $pub[0].' '.preg_replace('/.*[\d*]\.\s(.*)$/','$1',$pub[1]);
+				error_log($pub[1]); 
+				error_log(preg_replace('/.*[\d*]\.\s(.*)$/','',$pub[1]));
+			} else {
+				$item->publication = $pub[0];
+			}
 			$item->pubmed_id = $data->find('.rprtid dd',0)->plaintext;
 			array_push($items,$item);
 		}
