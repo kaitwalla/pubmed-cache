@@ -20,12 +20,12 @@ $pubmed = new Pubmed;
 </head>
 <body>
 <nav class="navbar navbar-inverse bg-inverse">
-		<a href="/pubmed" class="navbar-brand">PubMed Cache Management</a>
+		<a href="javascript://" class="navbar-brand">PubMed Cache Management</a>
 	</nav>
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-12">
-			
+
 			<?php
 				if (is_user_logged_in() && current_user_can('administrator')) {
 					$pubmed->print_top_buttons();
@@ -39,7 +39,7 @@ $pubmed = new Pubmed;
 		</div>
 	</div>
 </div>
-	
+
 <div id="primary-modal" class="modal fade hide">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -63,7 +63,7 @@ $pubmed = new Pubmed;
 						<label for="name">PubMed URL</label>
 						<input type="text" class="form-control" name="pubmed_url">
 						<small class="form-text text-muted">The exact URL for your search</small>
-					</div>					
+					</div>
 				</form>
 			</div>
 			<div class="modal-footer">
@@ -71,9 +71,9 @@ $pubmed = new Pubmed;
 					<button type="button" class="btn btn-primary" data-action="save">Save</button>
 			</div>
 		</div>
-	</div>	
+	</div>
 </div>
-	
+
 <div id="secondary-modal" class="modal fade hide">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -84,7 +84,7 @@ $pubmed = new Pubmed;
 					<button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
 			</div>
 		</div>
-	</div>	
+	</div>
 </div>
 
 <div id="ajax-warning">
@@ -92,7 +92,7 @@ $pubmed = new Pubmed;
 		<img src="assets/images/50.gif" />
 		<p>Working ...</p>
 	</div>
-</div>	
+</div>
 
 <script src="https://code.jquery.com/jquery-3.1.1.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
