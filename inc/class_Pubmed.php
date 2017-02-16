@@ -5,6 +5,7 @@ require_once('simple_dom.php');
 class Pubmed {
 	public function __construct() {
 		global $creds;
+		$this->creds = $creds;
 		try {
 			$this->db = new PDO($creds->dsn,$creds->user,$creds->password);
 		} catch (PDOException $e) {
@@ -21,6 +22,13 @@ class Pubmed {
 		} else {
 			$this->throw_ajax_error('Invalid request type');
 		}
+		
+		if ($v['security_token'] !== $this->creds->security_token) {
+			$this->throw_ajax_error('Invalid security token');
+		} else {
+			unset($v['security_token']);
+		}
+		
 		$this->parameters = new stdClass();
 		$this->parameters->action = $v['type'];
 		switch ($this->parameters->action) {
@@ -131,8 +139,8 @@ class Pubmed {
 							}
 						}
 					}
-					$this->ajax_type = 'success';
-					$this->ajax_content = 'All feeds successfully refreshed';
+					$this->ajax_type = 'alert_update';
+					$this->ajax_content = 'All feeds';
 					$this->return_ajax();
 				break;
 		}
@@ -212,7 +220,8 @@ print "\n</channel>
 	public function print_top_buttons() {
 		?>
 		<div id="action-buttons">
-			<button class="btn btn-primary" data-action="add"><i class="fa fa-plus"></i> Add New</button>			
+			<button class="btn btn-primary" data-action="add"><i class="fa fa-plus"></i> Add New</button>
+			<button class="btn btn-success" data-action="refresh_all"><i class="fa fa-recycle"></i> Refresh all</button>
 		</div>
 		<?php
 	}

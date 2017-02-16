@@ -33,9 +33,13 @@ $(function() {
           var data = {
             'type' : 'refresh',
             'id' : li.data('id'),
-            'pubmed_url' : li.data('url')
+            'pubmed_url' : li.data('url'),
+            'security_token' : ajax_actions.get_security_token()
           }
           ajax_actions.refresh(data);
+        break;
+        case 'refresh_all':
+            ajax_actions.refresh_all();
         break;
       }
     });
@@ -105,6 +109,8 @@ $(function() {
         if(return_data.type == 'edit') {
           return_data.id = modal_container.find('input[name="id"]').val();
         }
+          
+        return_data.security_token = public.get_security_token();
         
         return return_data;
       },
@@ -120,11 +126,14 @@ $(function() {
       }
     };
     var public = {
+      get_security_token: function() {
+        return $('input[name="security_token"]').val();  
+      },
       delete: function(id) {
         private.working_animation.show();
         $.post({
           url: private.url,
-          data: {type: 'delete', id: id},
+          data: {type: 'delete', id: id, 'security_token': public.get_security_token()},
           success: function(data) {
             data = JSON.parse(data);
             private.after_actions[data.type](data.content);
@@ -142,8 +151,21 @@ $(function() {
           }
         })
       },
+      refresh_all: function() {
+        private.working_animation.show();        
+        console.log(private.get_data_from_modal());
+        $.post({
+          url: private.url,
+          data: { 'security_token' : public.get_security_token(), type: 'refresh_all' },
+          success: function(data) {
+            data = JSON.parse(data);
+            private.after_actions[data.type](data.content);
+          }
+        })
+      },
       save: function() {
         private.working_animation.show();        
+        console.log(private.get_data_from_modal());
         $.post({
           url: private.url,
           data: private.get_data_from_modal(),

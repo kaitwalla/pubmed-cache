@@ -93,6 +93,9 @@ $pubmed = new Pubmed;
 		<p>Working ...</p>
 	</div>
 </div>
+<?php if (is_user_logged_in() && current_user_can('administrator')) { ?>
+	<input type="hidden" name="security_token" value="<?php print $creds->security_token; ?>" />
+<?php } ?>
 
 <script src="https://code.jquery.com/jquery-3.1.1.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
