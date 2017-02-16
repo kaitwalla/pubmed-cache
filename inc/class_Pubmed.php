@@ -139,8 +139,8 @@ class Pubmed {
 							}
 						}
 					}
-					$this->ajax_type = 'success';
-					$this->ajax_content = 'All feeds successfully refreshed';
+					$this->ajax_type = 'alert_update';
+					$this->ajax_content = 'All feeds';
 					$this->return_ajax();
 				break;
 		}

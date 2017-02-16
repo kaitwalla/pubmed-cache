@@ -38,6 +38,9 @@ $(function() {
           }
           ajax_actions.refresh(data);
         break;
+        case 'refresh_all':
+            ajax_actions.refresh_all();
+        break;
       }
     });
   
@@ -142,6 +145,18 @@ $(function() {
         $.post({
           url: private.url,
           data: data,
+          success: function(data) {
+            data = JSON.parse(data);
+            private.after_actions[data.type](data.content);
+          }
+        })
+      },
+      refresh_all: function() {
+        private.working_animation.show();        
+        console.log(private.get_data_from_modal());
+        $.post({
+          url: private.url,
+          data: { 'security_token' : public.get_security_token(), type: 'refresh_all' },
           success: function(data) {
             data = JSON.parse(data);
             private.after_actions[data.type](data.content);
