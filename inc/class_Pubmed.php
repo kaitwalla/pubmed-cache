@@ -14,7 +14,6 @@ class Pubmed {
 	
 	public function ajax_check_parameters() {
 		$v = (!empty($_POST)) ? $_POST : $_GET;
-//		$v = $_POST;
 		if (!empty($v)) {
 			if (!isset($v['type'])) {
 				$this->throw_ajax_error('Invalid type');
@@ -25,6 +24,9 @@ class Pubmed {
 		$this->parameters = new stdClass();
 		$this->parameters->action = $v['type'];
 		switch ($this->parameters->action) {
+			case 'refresh_all':
+				$parameters = array();
+			break;
 			case 'add':
 				$parameters = array('slug','name','pubmed_url');
 			break;
@@ -53,7 +55,7 @@ class Pubmed {
 	
 	public function ajax_do_action() {
 			$this->ajax_check_parameters();
-			if ($this->parameters->action !== 'delete') {
+			if ($this->parameters->action !== 'delete' && $this->parameters->action !== 'refresh_all') {
 				$this->pubmed_url = $this->parameters->pubmed_url;
 				$this->get_pubmed_data();
 			}
@@ -111,6 +113,27 @@ class Pubmed {
 						$this->ajax_content = $this->query_parameters;
 						$this->return_ajax();
 					}
+				break;
+				case 'refresh_all':
+					$this->query = $this->db->prepare('SELECT * FROM pubmed');
+					$this->query_parameters = array();
+					if ($this->query_execute()) {
+						if (count($this->results) > 0) {
+							foreach ($this->results as $result) {
+								$this->pubmed_url = $result['pubmed_url'];
+								$this->get_pubmed_data();
+								$this->query = $this->db->prepare('UPDATE pubmed SET data=:data WHERE id=:id');
+								$this->query_parameters = array(
+									'id' => $result['id'],
+									'data' => json_encode($this->pubmed_data)
+								);
+								$this->query_execute();
+							}
+						}
+					}
+					$this->ajax_type = 'success';
+					$this->ajax_content = 'All feeds successfully refreshed';
+					$this->return_ajax();
 				break;
 		}
 	}
@@ -177,8 +200,6 @@ print "\n</channel>
 			$pub = explode('. doi',str_replace(' .','',$publication));
 			if (count($pub) > 1) { 
 				$item->publication = (preg_match('/.*[\d*]\.$/',$pub[1])) ? $pub[0] : $pub[0].' '.preg_replace('/.*[\d*]\.\s(.*)$/','$1',$pub[1]);
-				error_log($pub[1]); 
-				error_log(preg_replace('/.*[\d*]\.\s(.*)$/','',$pub[1]));
 			} else {
 				$item->publication = $pub[0];
 			}
