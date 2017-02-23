@@ -9,7 +9,7 @@ class Pubmed {
 		try {
 			$this->db = new PDO($creds->dsn,$creds->user,$creds->password);
 		} catch (PDOException $e) {
-			$self::throw_error($e->getMessage());
+			Pubmed::throw_error($e->getMessage());
 		}
 	}
 	
