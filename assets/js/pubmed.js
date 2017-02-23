@@ -39,10 +39,7 @@ $(function() {
           ajax_actions.refresh(data);
         break;
         case 'refresh_all':
-          ajax_actions.refresh_all();
-        break;
-        case 'cron_toggle':
-          ajax_actions.cron_toggle();
+            ajax_actions.refresh_all();
         break;
       }
     });
@@ -58,6 +55,11 @@ $(function() {
         },5000);
       },
       after_actions: {
+         alert_update: function(content) {
+           private.working_animation.hide();
+           var name = $('li[data-id="'+content+'"] p').text();
+           private.add_alert('success',name+' updated successfully!');
+         },
          add_row: function(content) {
            private.working_animation.hide();
            modal.hide();
@@ -70,17 +72,6 @@ $(function() {
            previous_alphabetically = (!previous_alphabetically) ? $('ul.list-group li').length-1 : previous_alphabetically;
            $('<li class="list-group-item" data-id="'+content.id+'" data-slug="'+content.slug+'" data-url="'+content.pubmed_url+'"><p>'+content.name+'</p><div class="ml-auto"><button data-action="show_url" class="btn btn-info"><i class="fa fa-link"></i></button> <button data-action="edit-item" class="btn btn-warning"><i class="fa fa-pencil"></i></button> <button data-action="refresh-item" class="btn btn-success"><i class="fa fa-refresh"></i></button> <button data-action="delete-item" class="btn btn-danger"><i class="fa fa-remove"></i></button></div></li>').insertAfter($('ul.list-group li').eq(previous_alphabetically));
            private.add_alert('success','Feed added successfully!');
-         },
-         alert_update: function(content) {
-           private.working_animation.hide();
-           var name = $('li[data-id="'+content+'"] p').text();
-           private.add_alert('success',name+' updated successfully!');
-         },
-         cron_update: function(status) {
-            private.working_animation.hide();
-            var button_text = (status == 'removed') ? 'Enable' : 'Disable';
-            $('button[data-action="cron_toggle"').text(button_text+' cron');
-            private.add_alert('success','Cron '+status);
          },
          error: function(content) {
            private.working_animation.hide();
@@ -162,6 +153,7 @@ $(function() {
       },
       refresh_all: function() {
         private.working_animation.show();        
+        console.log(private.get_data_from_modal());
         $.post({
           url: private.url,
           data: { 'security_token' : public.get_security_token(), type: 'refresh_all' },
@@ -173,20 +165,10 @@ $(function() {
       },
       save: function() {
         private.working_animation.show();        
+        console.log(private.get_data_from_modal());
         $.post({
           url: private.url,
           data: private.get_data_from_modal(),
-          success: function(data) {
-            data = JSON.parse(data);
-            private.after_actions[data.type](data.content);
-          }
-        })
-      },
-      cron_toggle: function() {
-        private.working_animation.show();
-        $.post({
-          url: private.url,
-          data: { 'security_token' : public.get_security_token(), type: 'cron_toggle' },
           success: function(data) {
             data = JSON.parse(data);
             private.after_actions[data.type](data.content);

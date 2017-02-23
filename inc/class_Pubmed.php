@@ -1,20 +1,18 @@
 <?php
 require_once('env.php');
 require_once('simple_dom.php');
-require_once('crontab.php');
 
 class Pubmed {
 	public function __construct() {
 		global $creds;
 		$this->creds = $creds;
-		$this->crontabRepository = new CrontabRepository(new CrontabAdapter());
 		try {
 			$this->db = new PDO($creds->dsn,$creds->user,$creds->password);
 		} catch (PDOException $e) {
 			$self::throw_error($e->getMessage());
 		}
 	}
-
+	
 	public function ajax_check_parameters() {
 		$v = (!empty($_POST)) ? $_POST : $_GET;
 		if (!empty($v)) {
@@ -24,15 +22,13 @@ class Pubmed {
 		} else {
 			$this->throw_ajax_error('Invalid request type');
 		}
-
-		if (!isset($v['security_token'])) {
-			$this->throw_ajax_error('Missing security token');
-		} else if ($v['security_token'] !== $this->creds->security_token) {
+		
+		if ($v['security_token'] !== $this->creds->security_token) {
 			$this->throw_ajax_error('Invalid security token');
 		} else {
 			unset($v['security_token']);
 		}
-
+		
 		$this->parameters = new stdClass();
 		$this->parameters->action = $v['type'];
 		switch ($this->parameters->action) {
@@ -64,10 +60,10 @@ class Pubmed {
 			$this->throw_ajax_error('Missing '.$error);
 		}
 	}
-
+	
 	public function ajax_do_action() {
 			$this->ajax_check_parameters();
-			if ($this->parameters->action !== 'delete' && $this->parameters->action !== 'refresh_all' && $this->parameters->action !== 'cron_toggle') {
+			if ($this->parameters->action !== 'delete' && $this->parameters->action !== 'refresh_all') {
 				$this->pubmed_url = $this->parameters->pubmed_url;
 				$this->get_pubmed_data();
 			}
@@ -75,7 +71,7 @@ class Pubmed {
 				case 'add':
 					$this->query = $this->db->prepare('INSERT INTO pubmed (name,slug,pubmed_url,data) VALUES (:name,:slug,:pubmed_url,:data)');
 					$this->query_parameters = array(
-						'name' => $this->parameters->name,
+						'name' => $this->parameters->name, 
 						'slug' => $this->parameters->slug,
 						'pubmed_url' => $this->parameters->pubmed_url,
 						'data' => json_encode($this->pubmed_data)
@@ -147,53 +143,15 @@ class Pubmed {
 					$this->ajax_content = 'All feeds';
 					$this->return_ajax();
 				break;
-				case 'toggle_cron':
-					if ($this->cron_check_if_exists()) {
-						$this->cron_remove();
-						$this->ajax_content = 'removed';
-					} else {
-						$this->cron_create();
-						$this->ajax_content = 'added';
-					}
-					$this->ajax_type = 'cron_update';
-					$this->return_ajax();
-				break;
 		}
 	}
-
-	public function cron_check_if_exists() {
-		$results = $this->crontabRepository->findJobByRegEx('/Refreshing\ pubmed\ cache/');
-		return (count($results) == 1);
-	}
-
-	public function cron_create() {
-		$crontabJob = new Crontabjob();
-		$crontabJob->minutes = '30';
-		$crontabJob->hours = '01';
-		$crontabJob->dayOfMonth = '*';
-		$crontabJob->months = '*';
-		$crontabJob->dayOfWeek = '*';
-		$crontabJob->taskCommandLine = 'php-cgi '.___DIR___.'/actions.php action=refresh_all security_token='.$this->creds->security_token;
-		$crontabJob->comments = "Refreshing pubmed cache";
-		$this->crontabRepository->addJob($crontabJob);
-		$this->crontabRepository->persist();
-	}
-
-	public function cron_remove() {
-		$results = $this->crontabRepository->findJobByRegex('/Logging\ disk\ usage/');
-		if (count($results == 1) {
-			$crontabJob = $results[0];
-			$this->crontabRepository->removeJob($crontabJob);
-			$this->crontabRepository->persist();
-		}
-	}
-
+	
 	public function feed_check_parameters() {
 		if (!isset($_GET['slug'])) {
 			$this->throw_feed_error('No slug specified');
 		}
 	}
-
+	
 	public function feed_output() {
 		global $rss_description;
 		$this->feed_check_parameters();
@@ -232,7 +190,7 @@ print "\n</channel>
 			}
 		}
 	}
-
+	
 	public function get_pubmed_data() {
 		if (!$this->pubmed_url) {
 			$this->throw_ajax_error('Missing PubMed URL');
@@ -248,7 +206,7 @@ print "\n</channel>
 			$item->authors = $details->find('.desc',0)->plaintext;
 			$publication = $details->find('.details',0)->plaintext;
 			$pub = explode('. doi',str_replace(' .','',$publication));
-			if (count($pub) > 1) {
+			if (count($pub) > 1) { 
 				$item->publication = (preg_match('/.*[\d*]\.$/',$pub[1])) ? $pub[0] : $pub[0].' '.preg_replace('/.*[\d*]\.\s(.*)$/','$1',$pub[1]);
 			} else {
 				$item->publication = $pub[0];
@@ -258,18 +216,16 @@ print "\n</channel>
 		}
 		$this->pubmed_data = $items;
 	}
-
+	
 	public function print_top_buttons() {
 		?>
 		<div id="action-buttons">
 			<button class="btn btn-primary" data-action="add"><i class="fa fa-plus"></i> Add New</button>
 			<button class="btn btn-success" data-action="refresh_all"><i class="fa fa-recycle"></i> Refresh all</button>
-			<?php $cron_enabled = $this->cron_check_if_exists(); ?>
-			<button class="btn btn-info" data-action="cron_toggle"><?php print ($cron_enabled) ? 'Disable' : 'Enable'; ?> cron</button>
 		</div>
 		<?php
 	}
-
+	
 	public function print_list_of_existing_feeds() {
 		$this->query = $this->db->prepare('SELECT * FROM pubmed ORDER BY slug ASC');
 		$this->query_parameters = array();
@@ -292,7 +248,7 @@ print "\n</channel>
 			?></ul><?php
 		}
 	}
-
+	
 	public function query_execute() {
 		try {
 			$this->query->execute($this->query_parameters);
@@ -302,7 +258,7 @@ print "\n</channel>
 			$this->throw_ajax_error($e->getMessage());
 		}
 	}
-
+				
 	public function return_ajax() {
 		$message = new stdClass();
 		$message->type = $this->ajax_type;
@@ -310,19 +266,19 @@ print "\n</channel>
 		print json_encode($message);
 		exit;
 	}
-
+				
 	public function throw_ajax_error($message) {
 		$this->ajax_type = 'error';
 		$this->ajax_content = $message;
 		$this->return_ajax();
 	}
-
+	
 	public function throw_feed_error($message) {
 	?>
 		<html><head><title>PubMed Cache Error</title></head><body><p><?php print $message; ?></p></body></html>
 	<?php
 	}
-
+	
 	public static function throw_error($message) {
 		print '<div class="user-alert alert alert-danger alert-dismissible fade show"><button type="button" class="close" data-dismiss="alert" aria-label="Close">
     <span aria-hidden="true">&times;</span>
