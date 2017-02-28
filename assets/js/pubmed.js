@@ -142,6 +142,8 @@ $(function() {
       },
       refresh: function(data) {
         private.working_animation.show();
+        window.the_data = data;
+        window.url = private.url;
         $.post({
           url: private.url,
           data: data,
