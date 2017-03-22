@@ -125,6 +125,7 @@ class Pubmed {
 				case 'refresh_all':
 					$this->query = $this->db->prepare('SELECT * FROM pubmed');
 					$this->query_parameters = array();
+					error_log('refresh_all running');
 					if ($this->query_execute()) {
 						if (count($this->results) > 0) {
 							foreach ($this->results as $result) {

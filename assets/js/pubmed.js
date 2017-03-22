@@ -155,7 +155,6 @@ $(function() {
       },
       refresh_all: function() {
         private.working_animation.show();        
-        console.log(private.get_data_from_modal());
         $.post({
           url: private.url,
           data: { 'security_token' : public.get_security_token(), type: 'refresh_all' },
@@ -167,7 +166,6 @@ $(function() {
       },
       save: function() {
         private.working_animation.show();        
-        console.log(private.get_data_from_modal());
         $.post({
           url: private.url,
           data: private.get_data_from_modal(),
