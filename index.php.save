@@ -1,4 +1,4 @@
-<?php
+C<?php
 define( 'WP_USE_THEMES', false );
 define( 'COOKIE_DOMAIN', false );
 define( 'DISABLE_WP_CRON', true );
