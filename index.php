@@ -1,12 +1,8 @@
 <?php
-define( 'WP_USE_THEMES', false );
-define( 'COOKIE_DOMAIN', false );
-define( 'DISABLE_WP_CRON', true );
+//require_once(__DIR__ . '/../wp-load.php');
+require_once(__DIR__ . '/inc/class_Pubmed.php');
 
-require_once('../wp-load.php');
-require_once('inc/class_Pubmed.php');
-
-$pubmed = new Pubmed;
+$pubmed = new Pubmed();
 ?>
 <!DOCTYPE html>
 <html lang="en" class="pubmed">
@@ -27,14 +23,14 @@ $pubmed = new Pubmed;
 		<div class="col-12">
 
 			<?php
-				if (is_user_logged_in() && current_user_can('administrator')) {
+				//if (is_user_logged_in() && current_user_can('administrator')) {
 					$pubmed->print_top_buttons();
 					$pubmed->print_list_of_existing_feeds();
-				} else { ?>
+				/*} else { ?>
 				<p>You need to be logged in to use this system.</p>
 				<a href="/wp-admin" class="btn btn-primary">Login</a>
 				<?php
-				}
+				}*/
 			?>
 		</div>
 	</div>
@@ -93,9 +89,9 @@ $pubmed = new Pubmed;
 		<p>Working ...</p>
 	</div>
 </div>
-<?php if (is_user_logged_in() && current_user_can('administrator')) { ?>
+<?php// if (is_user_logged_in() && current_user_can('administrator')) { ?>
 	<input type="hidden" name="security_token" value="<?php print $creds->security_token; ?>" />
-<?php } ?>
+<?php //} ?>
 
 <script src="https://code.jquery.com/jquery-3.1.1.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>

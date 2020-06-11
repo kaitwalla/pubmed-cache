@@ -1,6 +1,6 @@
 <?php
-require_once('env.php');
-require_once('simple_dom.php');
+require_once(__DIR__ . '/env.php');
+require_once(__DIR__ . '/../vendor/autoload.php');
 
 class Pubmed {
 	public function __construct() {
@@ -196,25 +196,26 @@ print "\n</channel>
 		if (!$this->pubmed_url) {
 			$this->throw_ajax_error('Missing PubMed URL');
 		}
-		$html = file_get_html($this->pubmed_url);
-		$items = array();
-		foreach ($html->find('.rprt') as $data) {
+		$scraper = new Goutte\Client();
+		$crawler = $scraper->request('GET', $this->pubmed_url);
+		$items = [];
+		$itemCount = 0;
+		$crawler->filter('.docsum-content')->each(function($node) use (&$items) {
 			$item = new stdClass();
-			$link = $data->find('.title a',0);
-			$item->link = 'https://www.ncbi.nlm.nih.gov'.$link->href;
-			$item->title = $link->plaintext;
-			$details = $data->find('.supp',0);
-			$item->authors = $details->find('.desc',0)->plaintext;
-			$publication = $details->find('.details',0)->plaintext;
-			$pub = explode('. doi',str_replace(' .','',$publication));
+			$link = $node->filter('.labs-docsum-title')->eq(0);
+			$item->link = 'https://www.ncbi.nlm.nih.gov'.explode('?',$link->attr('href'))[0];
+			$item->title = $link->text();
+			$item->authors = $node->filter('.full-authors')->eq(0)->text();
+			$publication = $node->filter('.full-journal-citation')->eq(0)->text();
+			$pub = explode('. doi:',str_replace(' .','',$publication));
 			if (count($pub) > 1) { 
 				$item->publication = (preg_match('/.*[\d*]\.$/',$pub[1])) ? $pub[0] : $pub[0].' '.preg_replace('/.*[\d*]\.\s(.*)$/','$1',$pub[1]);
 			} else {
 				$item->publication = $pub[0];
 			}
-			$item->pubmed_id = $data->find('.rprtid dd',0)->plaintext;
-			array_push($items,$item);
-		}
+			$item->pubmed_id = $node->filter('.docsum-pmid')->eq(0)->text();
+			array_push($items, $item);
+		});
 		$this->pubmed_data = $items;
 	}
 	
@@ -278,6 +279,7 @@ print "\n</channel>
 	?>
 		<html><head><title>PubMed Cache Error</title></head><body><p><?php print $message; ?></p></body></html>
 	<?php
+	exit();
 	}
 	
 	public static function throw_error($message) {
