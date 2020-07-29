@@ -202,7 +202,7 @@ print "\n</channel>
 		$itemCount = 0;
 		$crawler->filter('.docsum-content')->each(function($node) use (&$items) {
 			$item = new stdClass();
-			$link = $node->filter('.labs-docsum-title')->eq(0);
+			$link = $node->filter('.docsum-title')->eq(0);
 			$item->link = 'https://www.ncbi.nlm.nih.gov'.explode('?',$link->attr('href'))[0];
 			$item->title = $link->text();
 			$item->authors = $node->filter('.full-authors')->eq(0)->text();
