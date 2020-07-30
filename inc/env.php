@@ -2,10 +2,10 @@
 
 $creds = new stdClass();
 
-$creds->dsn = 'mysql:dbname=testdb;host=127.0.0.1';
-$creds->user = 'dbuser';
-$creds->password = 'password';
-$creds->security_token = 'REPLACE_THIS_WITH_A_RANDOM_STRING_TO_SECURE_AJAX';
+$creds->dsn = 'mysql:dbname=dev-pubmedcache;host=127.0.0.1';
+$creds->user = 'root';
+$creds->password = 'root';
+$creds->security_token = 'LINK_PENGIN_IS_BEST';
 
 $rss_description = "This is a PubMed Cache for a specific search";
 ?>

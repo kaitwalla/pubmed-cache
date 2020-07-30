@@ -36,6 +36,7 @@ $(function() {
             'pubmed_url' : li.data('url'),
             'security_token' : ajax_actions.get_security_token()
           }
+          console.log(data);
           ajax_actions.refresh(data);
         break;
         case 'refresh_all':

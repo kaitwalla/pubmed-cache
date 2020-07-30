@@ -203,7 +203,7 @@ print "\n</channel>
 		$crawler->filter('.docsum-content')->each(function($node) use (&$items) {
 			$item = new stdClass();
 			$link = $node->filter('.docsum-title')->eq(0);
-			$item->link = 'https://www.ncbi.nlm.nih.gov'.explode('?',$link->attr('href'))[0];
+			$item->link = 'https://pubmed.ncbi.nlm.nih.gov'.explode('?',$link->attr('href'))[0];
 			$item->title = $link->text();
 			$item->authors = $node->filter('.full-authors')->eq(0)->text();
 			$publication = $node->filter('.full-journal-citation')->eq(0)->text();
